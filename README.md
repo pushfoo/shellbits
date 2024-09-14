@@ -1,6 +1,23 @@
 # shellbits
 Bits of shell script I want to keep around. Maybe it'll become a more "proper" library one day?
 
+## Library Usage
+
+First, `git clone` this repo onto your system.
+
+You can either source directly from the repo, or by adding shellbits to
+your PATH.
+
+### Yes, Add it to Path!
+
+1. `cd shellbits`
+2. `pwd` 
+3. Copy that path
+2. Add it to your `.bash_rc` to enable sourcing from anywhere:
+    ```bash
+    export PATH=PATH:/home/you/path/to/shellbits
+    ```
+
 ## Style
 
 [foxundermoon's shell-format]: https://marketplace.visualstudio.com/items?itemName=foxundermoon.shell-format

@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-# A mini-library / template with names similar to those of Python's logging.Logger.
+# A mini-library with functions similar to methods on Python's logging.Logger.
 # https://docs.python.org/3/library/logging.html
 
-# In addition to any caveats in the README.md, the following apply here:
+# In addition to any caveats in the README.md:
 # 1. Bash-only for now, sorry!
 # 2. No real formatting attempted beyond prefixing (and no flexibility, either)
 # 3. No real log level, just whether DEBUG is set and to a non-empty string
