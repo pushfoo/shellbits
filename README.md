@@ -28,7 +28,7 @@ This currently uses a comment style heavily influenced by Python and Markdown.
 
 ### I don't like that!
 
-That's okay. These may help:
+I'm open to recomendations via [the repo's GitHub issues](https://github.com/pushfoo/shellbits/issues). In the meantime, these may help:
 
 | Tool                                  | Summary                                    |
 |---------------------------------------|--------------------------------------------|
