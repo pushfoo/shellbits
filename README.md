@@ -1,16 +1,20 @@
 # shellbits
 
-Shell scripts and a few utility functions.
+Shell scripts and reusable utility libaries.
 
-These are tools:
+These tools:
 
-* are textmode conveniences
-* do not aim to provide industrial-strength efficiency
+* focus on user convenience
+* assume [common environments](#requirements)
+* do not target "industrial scale"
 
 ## Usage
 
-**TL;DR:** `install.sh && source ~/bashrc` to run [commands](#commands)
+**TL;DR:** `install.sh && source ~/.bashrc` to run [commands](#commands)
 or [`source "$SHELLBITS_LIB/logging.sh"`](#libraries).
+
+> [!NOTE]
+> Mac users [may need to update to a more recent version of `bash`](#requirements).
 
 ### Overview
 
@@ -26,13 +30,12 @@ The following utility scripts are located in [`bin/`](./bin):
 | `wat old`  | Show theo ldest items in `cwd` last            |
 | `wat tree` | Filtered tree view of project structure.       |
 
-> [!NOTE]
-> Some scripts may require a `bash`-compatible shell rather than `sh`.
 
 #### Libaries
 
-The [`lib/logging.sh`](bin/logging.sh) file contains some helpers
-for commong logging tasks. Use it in scripts as follows:
+Helpers for logging are loated in [`lib/logging.sh`](bin/logging.sh).
+
+Use it in your scripts as follows:
 
 ```sh
 source "$SHELLBITS_LIB/logging.sh"
@@ -40,13 +43,30 @@ source "$SHELLBITS_LIB/logging.sh"
 
 ### Installing
 
-#### Easy mode
+#### Requirements
+
+**TL;DR:** Most systems have a `bash` new enough to support [array syntax][].
+
+Some scripts *may* work with `sh`, [but it not the same as `bash`][bash-vs-sh].
+
+[array syntax]: https://www.gnu.org/software/bash/manual/html_node/Arrays.html
+[bash-vs-sh]: https://stackoverflow.com/a/5725402
+
+##### Mac
+
+Recent Macs ship an older version of `bash` for license reasons.
+
+If you have issues, [`brew`][brew] may be useful for installing a later version.
+
+[brew]: https://brew.sh/
+
+#### Install via Script
 
 1. [Read `./install.sh`](./install.sh) to understand what it does
 2. Run `./install.sh` to add a `PATH` entry to your `.bashrc`
 3. `source ~/.bashrc`
 
-#### Manually
+#### Install Manually
 
 1. `cd shellbits` (or wherever you cloned it)
 2. `pwd` 
