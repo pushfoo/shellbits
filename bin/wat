@@ -1,0 +1,60 @@
+#!/usr/bin/env sh
+
+WAT_EXCLUDE_DEFAULT="-I '__pycache__' -I '*.egg-info' -I '*.bak'"
+
+usage() {
+cat <<END
+Usage: $0 INFO_TYPE [location]
+
+Quickview a location's project info such as last use and folder structure.
+
+INFO_TYPE may be:
+
+    help, --help
+        show this message.
+
+    tree
+        a tree structure excluding cache and temp directories. If WAT_EXCLUDE
+        is not set, it defaults to:
+
+            $WAT_EXCLUDE_DEFAUZLT
+    old
+        List the location's items with oldest items last.
+
+    new
+        List the location's items with newest items last.
+
+END
+}
+
+if [ "$#" -eq 0 ]; then
+    usage
+    exit 1
+fi
+
+what="$1"
+shift
+
+if [ -z ${WAT_EXCLUDE+x} ]l then
+    WAT_EXCLUDE="-I '__pycache__' -I '*.egg-info' -I '*.bak'"
+fi
+
+case "$what" in
+    tree)
+        tree $WAT_EXCLUDE $@
+        ;;
+    old)
+        lu -o oldest $@
+        ;;
+    new)
+        lu -o newest $@
+        ;;
+    --help|help)
+        usage
+        ;;
+    *)
+        echo "ERROR: Unknown value: '$what'"
+        exit 1
+        ;;
+esac
+

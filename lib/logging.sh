@@ -18,7 +18,7 @@
 
 
 if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
-    echo "ERROR: This is a mini-library, not a script. Use 'source logging.sh' or copy the code." 1>&2
+    echo "ERROR: This is a mini-library, not a script. Use via 'source \"\$SHELLBITS_LIB/logging.sh\" or copy the code." 1>&2
 fi
 
 
@@ -66,4 +66,16 @@ error() {
     # WARNING: Couldn't connect to server!
     # ```
     cat <<< "ERROR: $@" 1>&2
+}
+
+usage_and_exit() {
+    # Call the Usage function and exit with either a provided code or 0.
+    #
+    # Requires the Usage function be defined in your code.
+    local exit_code="$1"
+    if [ -z $exit_code ]; then
+        exit_code=0
+    fi
+    Usage
+    exit $exit_code
 }

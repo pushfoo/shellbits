@@ -1,0 +1,116 @@
+#!/usr/bin/env bash
+
+# Show the most recently changed items in the folder
+#
+# > [!NOTE]
+# > This currently expects bash since arrays make life easier.
+# >
+# > 1. This is a script for my personal use
+# > 2. I won't say no to at least reviewing a PR
+
+source "$SHELLBITS_LIB/logging.sh"
+
+EXEC_NAME="$0"
+usage() {
+cat << END
+Usage: ${EXEC_NAME} [OPTION]... [TARGET]
+
+List items by usage date. By default, sorts from oldest to newest.
+
+TARGET defaults to the current working directory.
+
+In addition to the OPTION flags below, you also can set
+LU_* environment variables described after the flags.
+
+
+TARGET:
+    A directory to show the most recent items from.
+
+OPTION flags:
+
+    -h,  --help
+        Show this message and exit.
+
+    -n NUMBER, --number [0-9]+
+        Show this many entries (defaults to all)
+
+    -o, --order (new|old)
+        Either "newest" or "oldest" at the bottom.
+
+    -c (auto|never|always), --color (auto|never|always)
+        Enable color output for the file listing.
+
+    -g, --no-color
+        Shorthand for --color=never.
+
+Environment variables:
+
+    LU_ORDERING
+        May be a default of "new" or "old"
+
+    LU_SHOW_N
+        How many results to show. Must be N >= 1 if set.
+
+    LU_COLOR_FLAG
+        "always", "never", or "auto" to guess from the session.
+
+END
+}
+
+
+LU_POSITIONALS=()
+
+
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        -h|--help)     show_help                 ; exit  0 ;;
+        -n|--number)   LU_SHOW_N="$2"            ; shift 2 ;;
+        -o|--order)    LU_ORDERING="$2"          ; shift 2 ;;
+        -c|--color)    LU_COLOR_FLAG="$2"        ; shift 2 ;;
+        -g|--no-color) LU_COLOR_FLAG=""          ; shift 1 ;;
+        -*|--*)        error "Unknown option $1" ; exit  1 ;;
+        *)             LU_POSITIONALS+=("$1")    ; shift 1 ;;
+    esac
+done
+
+# Validate any values, including ones from environment variables.
+
+if [ ! -z ${LU_SHOW_N+x} ]; then
+    if [ "$LU_SHOW_N" -lt 1 ]; then
+        error "Cannot show less than 1 value (LU_SHOW_N=$LU_SHOW_N)"
+        exit 1
+    else
+       TAIL_ACTION="| tail -n "$LU_SHOW_N""
+    fi
+else
+    TAIL_ACTION=""
+fi
+
+# Handle color
+if [ -z ${LU_COLOR_FLAG+x} ]; then
+    LU_COLOR_FLAG="auto"
+else
+    case "$LU_COLOR_FLAG" in
+        auto);;
+        always);;
+        never);;
+        *) error "color value '$LU_COLOR_FLAG' is not one of: auto, always, never"; exit 1 ;;
+    esac
+fi
+if [ -z ${LU_ORDERING+x} ]; then
+    LU_ORDERING="new"
+fi
+# Validate a requested ordering and convert to a flag.
+case "$LU_ORDERING" in
+    new) LU_ORDER_FLAG="-A" ;;
+    old) LU_ORDER_FLAG="-a" ;;
+    *)   error "ordering value '$LU_ORDERING' is not one of: new, old"; exit 1 ;;
+esac
+# Default to current directory
+if [ -z ${LU_TARGET+x} ]; then
+    LU_TARGET="$(pwd)"
+fi
+
+# Validation over, show listings
+ls -h "-ltrc" "$LU_ORDER_FLAG" "--color=$LU_COLOR_FLAG" "$LU_TARGET" $TAIL_ACTION
+
