@@ -1,6 +1,7 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
-WAT_EXCLUDE_DEFAULT="-I '__pycache__' -I '*.egg-info' -I '*.bak'"
+source $SHELLBITS_LIB/logging.sh
+source $SHELLBITS_LIB/paths.sh
 
 usage() {
 cat <<END
@@ -13,16 +14,29 @@ INFO_TYPE may be:
     help, --help
         show this message.
 
-    tree
-        a tree structure excluding cache and temp directories. If WAT_EXCLUDE
-        is not set, it defaults to:
-
-            $WAT_EXCLUDE_DEFAUZLT
     old
         List the location's items with oldest items last.
 
     new
         List the location's items with newest items last.
+
+    tree
+        Show a tree structure of the project minus IDE/temp dirs.
+
+        IMPORTANT: This temp-fixes tree's .gitignore handling!
+
+        For each dir/ entry in .gitignore, it adds a matching
+        -I "dir" flag to the tree invocation. This allows for
+        passable handling for folder rules for:
+
+        * Python (virtual envs,  __pycache__/, and *.egg-info/)
+        * JavaScript nodemodules folders
+        * User-only IDE data folders
+
+        Affected versions include 2.1.0 on Debian bookworm, but:
+
+        * It likely affects tree versions since 2.0.0
+        * Higher versions may also be affected
 
 END
 }
@@ -32,28 +46,64 @@ if [ "$#" -eq 0 ]; then
     exit 1
 fi
 
+
+build_tree_workaround() {
+    # Echoes `-I "dir1"... -I "dirMax` for each `dirN` in a `.gitignore` `$file`.
+    #
+    # This is a lazworkaround for how some tree versions do not
+    # handle trailing slashes in .gitignore the the way git does.
+    local file="$1"
+
+    local output=""
+    while read -r LINE; do
+        if [[ "$LINE" == */ ]]; then
+            output="$output -I $(remove_trailing_slash "$LINE")"
+        fi
+    done < "$file"
+
+    echo "$output"
+}
+
+
+subcmd_tree() {
+    debug "\$\@: $@"
+    local path="$(get_valid_path_or_cwd $@)"
+    local exitval=0
+
+    if [ -z "$path" ]; then
+        error "Cannot resolve path for '$@'"
+        exitval=1
+    else
+        debug "path=$path"
+        local gitignore="$(get_file_in_path "$path" .gitignore)"
+        local workaround_ignore_flags=""
+        if [ -z "$gitignore" ]; then
+            info "No .gitignore found: '$path'"
+        else
+            info "Found .gitignore: '$gitignore'"
+            workaround_ignore_flags="$(build_tree_workaround "$gitignore")"
+        fi
+    fi
+    tree --gitignore $workaround_ignore_flags $path
+    exit "$exitval"
+}
+
+
 what="$1"
 shift
 
-if [ -z ${WAT_EXCLUDE+x} ]l then
-    WAT_EXCLUDE="-I '__pycache__' -I '*.egg-info' -I '*.bak'"
-fi
-
 case "$what" in
     tree)
-        tree $WAT_EXCLUDE $@
+        subcmd_tree $@
         ;;
-    old)
-        lu -o oldest $@
-        ;;
-    new)
-        lu -o newest $@
+    old|new)
+        lu -o $what $@
         ;;
     --help|help)
         usage
         ;;
     *)
-        echo "ERROR: Unknown value: '$what'"
+        error "Unknown value: '$what'"
         exit 1
         ;;
 esac

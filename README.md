@@ -2,44 +2,98 @@
 
 Shell scripts and reusable utility libaries.
 
-These tools:
+## Overview
 
-* focus on user convenience
-* assume [common environments](#requirements)
-* do not target "industrial scale"
+### Commands
 
-## Usage
+| Command               | Summary                                                                                      |
+|-----------------------|----------------------------------------------------------------------------------------------|
+| [`wat`](#wat)         | `wat tree` improves [`tree`'s flaky `.gitignore` handling](#fixing-trees-gitignore-support). |
+| [`lu`](#lu)           | "Last used" sorts files by modification time (oldest/newest).                                |
+| [`rstrip`](#rstrip)   | Remove trailing whitespace from files / stdin.                                               |
+
+> [!NOTE]
+> `wat` also [has memorable shorthand for `lu`variations (`wat old` and `wat new`).](#wat).
+
+### Goals
+
+These tools are made with the following goals:
+
+| Goal                                     | Example                                                                            |
+|------------------------------------------|------------------------------------------------------------------------------------|
+| User convienience                        | `wat tree` [fixes `tree`'s `.gitignore` support](#fixing-trees-gitignore-support). |
+| Target [common platforms](#requirements) | Assumes recent-ish [bash][bash-vs-sh]                                              |
+| Avoid chasing "industrial scale"         | `wat tree` maintains legibilty by forgoing caching.                                |
+
+
+### Usage
 
 **TL;DR:** `install.sh && source ~/.bashrc` to run [commands](#commands)
-or [`source "$SHELLBITS_LIB/logging.sh"`](#libraries).
+or [`source "$SHELLBITS\_LIB/logging.sh"`](#libraries).
 
 > [!NOTE]
 > Mac users [may need to update to a more recent version of `bash`](#requirements).
 
-### Overview
+Skip to [Installing](#installing) for more guidance.
 
 #### Commands
 
 The following utility scripts are located in [`bin/`](./bin):
 
-| Command    | Summary                                        |
-|------------|------------------------------------------------|
-| `lu`       | "Last used" ls wrapper to sort by old/new.     |
-| `rstrip`   | Remove trailing whitespace from files / stdin. |
-| `wat new`  | Show the newest items in `cwd` last            |
-| `wat old`  | Show theo ldest items in `cwd` last            |
-| `wat tree` | Filtered tree view of project structure.       |
+##### `wat`
 
+A memorable wrapper for structure and time.
+
+`DIR` defaults to the current working directory.
+
+| Example           | Action                                                        |
+|------------------ |---------------------------------------------------------------|
+| `wat tree [DIR]`  | Wraps `tree` in a `.gitignore` adapter to fix older versions. |
+| `wat new [DIR]`   | Show the newest items in `cwd` last (`lu -o oldest [DIR]`)    |
+| `wat old [DIR]`   | Show theo ldest items in `cwd` last (`lu -o newest [DIR]`)    |
+
+##### `lu`
+
+"**L**ast **u**sed" listings sorted by modification time.
+
+Use this for finer control over than `wat old` and `wat new`.
+
+| Example                            | Action                                                          |
+|------------------------------------|-----------------------------------------------------------------|
+| `lu`                               | List the working directory by date from new to old.             |
+| `lu --order old`                   | Same as above but with the long flag specifying the default.    |
+| `lu --number 5 -o new ~/Downloads` | Show your 5 latest `~/Downloads` + dates from oldest to newest. |
+
+Use `lu --help` to learn more.
+
+##### `rstrip`
+
+Remove trailing whitespace at the end of every line.
+
+* Operates in-place on passed filenames
+* Pass a single `-` to read from `stdin`
+
+| Example                           | Action                                                           |
+|-----------------------------------|------------------------------------------------------------------|
+| `rstrip src/*.js`                 | Strip right-hand whitespace from `src`'s `.js` file in src.      |
+| `makemess | rstrip - > clean.txt` | Pipe messy real-time output into rstrip and store it `clean.txt` |
 
 #### Libaries
 
-Helpers for logging are loated in [`lib/logging.sh`](bin/logging.sh).
+Once [installed](#installing), load libraries from [`lib/`](./lib) as follows:
 
-Use it in your scripts as follows:
-
-```sh
+```shell
 source "$SHELLBITS_LIB/logging.sh"
 ```
+
+| `lib/` file                          |  Summary                                                                    |
+|--------------------------------------|-----------------------------------------------------------------------------|
+| [`lib/logging.sh`](./lib/logging.sh) | Base functions (`stderr`) and logging helpers (error, warning, debug, etc). |
+| [`lib/paths.sh`](./lib/paths.sh)     | Path member and trim helpers.                                               |
+
+Each `lib/\*.sh` file ends with a matching `SHELLBITS\_LIB_${NAME\_STEM}=1`
+declaration. You can avoid double-import by checking whether one is either
+defined or set to a non-empty value.
 
 ### Installing
 
@@ -62,6 +116,8 @@ If you have issues, [`brew`][brew] may be useful for installing a later version.
 
 #### Install via Script
 
+After cloning locally:
+
 1. [Read `./install.sh`](./install.sh) to understand what it does
 2. Run `./install.sh` to add a `PATH` entry to your `.bashrc`
 3. `source ~/.bashrc`
@@ -72,15 +128,83 @@ If you have issues, [`brew`][brew] may be useful for installing a later version.
 2. `pwd` 
 3. Copy that output
 4. Add the appropriate line to your `.bashrc` or other session init script:
-
-    ```bash
-    export PATH=PATH:/home/you/path/to/shellbits
-    ```
+   ```bash
+   export PATH=PATH:/home/you/path/to/shellbits
+   ```
 5. `source .bashrc` (or other file)
+
+
+## Details
+
+### Fixing `tree`'s `.gitignore` Support
+
+**TL;DR:** Make a `tree` flag for each broken `.gitignore` rule.
+
+#### What's Fixed?
+
+Trailing slash rules like `directory/` and `*.directory/`:
+
+* Python's `__pycache__/`, `.venv*/`, `*.egg-info/` rules
+* JavaScript's `node_modules/`
+* IDE folders like `.idea/`
+
+#### Am _I_ Affected?
+
+> [!TIP]
+> Feel free to relax: this is an infuriating problem but not a security concern.
+
+At least one widely-deployed version of `tree` is affected:
+ [Please file an issue][]
+to report more known versions.
+
+##### Debian Bookworm: Yes
+
+The `tree` version for Debian bookworm [is v2.1.0][bookworm-v2.1.0].
+
+Debian trixie:
+
+1. Just [superceded it as the current stable release][trixie]
+2. Ships [`tree` >= v2.2.1](https://packages.debian.org/trixie/tree)
+
+Although [bookworm has LTS support until at least 2028][bookworm], bugfix
+releases for non-security issues will grow slimmer with every day.
+
+
+[bookworm-v2.1.0]: https://packages.debian.org/bookworm/tree
+[trixie]: https://www.debian.org/News/2025/20250809
+[bookworm]: https://www.debian.org/releases/bookworm/
+[Please file an issue]: https://github.com/pushfoo/shellbits
+
+#### How does `wat tree` fix it?
+
+In the simplest way possible: if there's `.gitignore` for a project folder, read each line:
+
+1. Read either the next line or an EOF
+2. If at EOF, finish scanning
+3. If the line does not match a known-broken patterns, go back to step 1
+4. Use the broken rule to generate and store a replacement `tree` flag
+5. Go to step 1
+
+Once done scanning, a `--gitignore` flag is passed along with the
+ passed to `tree`
+along with a `--gitignore` to allow any working rules to apply as normal.
+
+#### Is it safe?
+
+More than installing random debs or overriding system packages.
+
+Both the `wat` command and all of shellbits follow
+[the rules on how to avoid breaking Debian][DontBreakDebian]:
+
+1. It is not a `.deb` at all
+2. It does not install software globally
+3. It only installs to your user directory as scripts
+
+[DontBreakDebian]: https://wiki.debian.org/DontBreakDebian
 
 ## Style
 
-[`bin/lu`](./bin/lu) currently uses a comment style heavily influenced by Python and Markdown.
+The repo currently uses a comment style heavily influenced by Python and Markdown.
 We'll see where it goes from here.
 
 ### I don't like that!

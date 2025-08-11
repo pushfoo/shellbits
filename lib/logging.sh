@@ -79,3 +79,5 @@ usage_and_exit() {
     Usage
     exit $exit_code
 }
+
+SHELLBITS_LIB_LOGGING=1

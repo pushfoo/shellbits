@@ -63,13 +63,19 @@ LU_POSITIONALS=()
 
 while [ "$#" -gt 0 ]; do
     case "$1" in
-        -h|--help)     show_help                 ; exit  0 ;;
-        -n|--number)   LU_SHOW_N="$2"            ; shift 2 ;;
-        -o|--order)    LU_ORDERING="$2"          ; shift 2 ;;
-        -c|--color)    LU_COLOR_FLAG="$2"        ; shift 2 ;;
-        -g|--no-color) LU_COLOR_FLAG=""          ; shift 1 ;;
-        -*|--*)        error "Unknown option $1" ; exit  1 ;;
-        *)             LU_POSITIONALS+=("$1")    ; shift 1 ;;
+        -h|--help)     usage              ; exit  0 ;;
+        -n|--number)   LU_SHOW_N="$2"     ; shift 2 ;;
+        -o|--order)    LU_ORDERING="$2"   ; shift 2 ;;
+        -c|--color)    LU_COLOR_FLAG="$2" ; shift 2 ;;
+        -g|--no-color) LU_COLOR_FLAG=""   ; shift 1 ;;
+        -*|--*)
+            error "Unknown option $1"
+            exit  1
+            ;;
+        *)
+            LU_POSITIONALS+=("$1")
+            shift 1
+            ;;
     esac
 done
 
@@ -102,8 +108,8 @@ if [ -z ${LU_ORDERING+x} ]; then
 fi
 # Validate a requested ordering and convert to a flag.
 case "$LU_ORDERING" in
-    new) LU_ORDER_FLAG="-A" ;;
-    old) LU_ORDER_FLAG="-a" ;;
+    new) LU_ORDER_FLAG="-t" ;;
+    old) LU_ORDER_FLAG="-tr" ;;
     *)   error "ordering value '$LU_ORDERING' is not one of: new, old"; exit 1 ;;
 esac
 # Default to current directory
@@ -112,5 +118,5 @@ if [ -z ${LU_TARGET+x} ]; then
 fi
 
 # Validation over, show listings
-ls -h "-ltrc" "$LU_ORDER_FLAG" "--color=$LU_COLOR_FLAG" "$LU_TARGET" $TAIL_ACTION
+ls -h "-hAlc" "$LU_ORDER_FLAG" "--color=$LU_COLOR_FLAG" "$LU_TARGET" $TAIL_ACTION
 
