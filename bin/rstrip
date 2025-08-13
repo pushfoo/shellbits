@@ -1,4 +1,8 @@
-#!/usr/env/bin sh
+#!/usr/bin/env bash
+
+if [ -z ${SHELLBITS_LIB_LOGGING+x} ]; then
+    source "$SHELLBITS_LIB/logging.sh"
+fi
 
 usage() {
 cat << END
@@ -8,27 +12,16 @@ Strip trailing whitespace.
 
 END
 }
-if [ '$#' -eq 1 ]; then
-    case "$1" in
-        -)
-            src="<&0"
-            ;;
-        --help)
-            usage
-            exit 0
-            ;;
-            esac
-        --*)
-            echo "ERROR: unknown flag: $1" 1>&2
-            exit 1
-            ;;
-        *)
-            ;;
-    esac
-else
-    src="$*"
-fi
 
-sed -i 's/s[ \t]*$//' $src
+src="$@"
+if [ "$#" -eq 1 ]; then
+    if [ "$1" == "--help" ]; then
+        usage
+    elif [ "$1" == "-" ]; then
+        sed -i 's/s[ \t]*$//' <&0
+    fi
+else
+    sed -i 's/s[ \t]*$//' "$@"
+fi
 
 

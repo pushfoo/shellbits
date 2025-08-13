@@ -1,0 +1,129 @@
+#!/usr/bin/env bash
+
+
+if [ -z ${SHELLBITS_LIB_LOGGING+x} ]; then
+    source "$SHELLBITS_LIB/logging.sh"
+fi
+if [ -z ${SHELLBITS_LIB_PATHS+x} ]; then
+    source "$SHELLBITS_LIB/paths.sh"
+fi
+
+
+usage() {
+local app="$(basename "$0")"
+cat << END
+Usage: $app [OPTIONS] [directory]
+
+Run tree after translating any known-buggy .gitignore rules.
+
+The last argument may be a directory. When not provided,
+it defaults to the current working directory. OPTIONS are
+passed through directly.
+
+This workaround lets older versions (v2.1.0 on Debian bookworm)
+handle .gitignore rules correctly.
+
+OPTIONS:
+
+    --help
+        Show this info.
+
+    -D
+        Show dates to the left of directories and folders.
+
+    --dirsfirst
+        Sort with directories first.
+
+    [ These are passthrough see man tree or tree --help ]
+
+END
+}
+
+
+convert_rule_to_flag() {
+    # Echo either an equivalent `tree` flag for known-bad rules or "".
+    #
+    # | Buggy Format | Equivalent Flag | PCRE                      |
+    # |--------------|-----------------|---------------------------|
+    # | `RULE/`      | `-I RULE`       | `^[^#].*\/(?=(\s*#.*)?$)` |
+    #
+    local rule="$1"
+    local flag=""
+
+    if [[ "$rule" =~ ^[^#].*\/(\s*#.*)?$ ]]; then
+        local flag="-I $(echo "$rule" | sed -r 's/(^[^#].*)(\/)(\s+#.)?$/\1/')"
+    fi
+
+    echo "$flag"
+}
+
+
+build_tree_workaround() {
+    # Convert known-broken rules in a `.gitignore` file to `tree` flags.
+    #
+        local file="$1"
+    local output=""
+
+    while read -r rule; do
+        local flag="$(convert_rule_to_flag "$rule")"
+        if [ -z "$flag" ]; then
+            debug "skipping line \"$rule\""
+        else
+            info "generated flag \"$flag\" for line \"$rule\""
+            output="$output $flag"
+        fi
+    done < "$file"
+
+    echo "$output"
+}
+
+
+TREE_ARGS=()
+
+
+run_twee() {
+    TREE_ARGS=()
+    local raw_path=""
+
+    # Extract all but last arg
+    while [ "$#" -gt 1 ]; do
+        TREE_ARGS+=("$1")
+        shift
+    done
+    # Treat last non-flag as a positional
+    if [[ "$1" =~ ^- ]]; then
+        TREE_ARGS+=("$1")
+    else
+        raw_path="$1"
+    fi
+
+    local exitval=0
+    local path="$(get_valid_path_or_cwd "$raw_path")"
+    local workaround_ignore_flags=""
+
+    if [ -z "$path" ]; then
+        error "Cannot resolve path for '$@'"
+        exitval=1
+    else
+        debug "path=$path"
+        local gitignore="$(get_file_in_path "$path" .gitignore)"
+        if [ -z "$gitignore" ]; then
+            info "No .gitignore found: '$path'"
+        else
+            info "Found .gitignore: '$gitignore'"
+            workaround_ignore_flags="$(build_tree_workaround "$gitignore")"
+        fi
+    fi
+    tree --gitignore $workaround_ignore_flags $path
+    exit "$exitval"
+}
+
+debug "\$\@: \"$@\""
+
+if [ "$#" -eq 1 ] && [ "$1" == "--help" ]; then
+    usage
+    exit 0
+else
+    run_twee "$@"
+fi
+

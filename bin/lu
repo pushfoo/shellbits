@@ -35,7 +35,7 @@ OPTION flags:
         Show this many entries (defaults to all)
 
     -o, --order (new|old)
-        Either "newest" or "oldest" at the bottom.
+        Sort to place "n(ew)" or "o(ld)" items at the bottom.
 
     -c (auto|never|always), --color (auto|never|always)
         Enable color output for the file listing.
@@ -58,9 +58,8 @@ END
 }
 
 
+# Parse args before validation
 LU_POSITIONALS=()
-
-
 while [ "$#" -gt 0 ]; do
     case "$1" in
         -h|--help)     usage              ; exit  0 ;;
@@ -79,8 +78,8 @@ while [ "$#" -gt 0 ]; do
     esac
 done
 
-# Validate any values, including ones from environment variables.
 
+# Validate any values, including ones from environment variables.
 if [ ! -z ${LU_SHOW_N+x} ]; then
     if [ "$LU_SHOW_N" -lt 1 ]; then
         error "Cannot show less than 1 value (LU_SHOW_N=$LU_SHOW_N)"
@@ -103,8 +102,24 @@ else
         *) error "color value '$LU_COLOR_FLAG' is not one of: auto, always, never"; exit 1 ;;
     esac
 fi
+
+expand_time() {
+    local t="$1"
+    local output=""
+    if [[ "$1" =~ o(ld)? ]]; then
+        output="old"
+    elif [[ "$1" =~ n(ew)? ]]; then
+        output="new"
+    else
+        error "Unkown time value: \"$1\""
+    fi
+    echo "$output"
+}
+
 if [ -z ${LU_ORDERING+x} ]; then
     LU_ORDERING="new"
+else
+    LU_ORDERING="$(expand_time "$LU_ORDERING")"
 fi
 # Validate a requested ordering and convert to a flag.
 case "$LU_ORDERING" in

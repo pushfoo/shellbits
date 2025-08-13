@@ -6,24 +6,24 @@ Shell scripts and reusable utility libaries.
 
 ### Commands
 
-| Command               | Summary                                                                                      |
-|-----------------------|----------------------------------------------------------------------------------------------|
-| [`wat`](#wat)         | `wat tree` improves [`tree`'s flaky `.gitignore` handling](#fixing-trees-gitignore-support). |
-| [`lu`](#lu)           | "Last used" sorts files by modification time (oldest/newest).                                |
-| [`rstrip`](#rstrip)   | Remove trailing whitespace from files / stdin.                                               |
+The [`wat`](#wat) command acts as a memorable wrapper around the rest of the shellbits utlities:
 
-> [!NOTE]
-> `wat` also [has memorable shorthand for `lu`variations (`wat old` and `wat new`).](#wat).
+| `wat $L` shorthand  | Full Shellbits Command     | Summary                                                                           |
+|---------------------|----------------------------|-----------------------------------------------------------------------------------|
+| `wat t [DIR]`       |[`twee [DIR]`](#twee)       | Improve [`tree`'s flaky `.gitignore` handling](#fixing-trees-gitignore-support).  |
+| `wat o [DIR]`       |[`lu -o old [DIR]`](#lu)    | "Last used" files sorted with oldest at bottom                                    |
+| `wat n [DIR]`       |[`lu -o new [DIR]`](#lu`)   | "Last used" files sorted with newest at bottom                                    |
+| `wat w FILE`        |[`rstrip FILE`](#rstrip)    | Remove trailing whitespace from files / stdin.                                    |
 
 ### Goals
 
 These tools are made with the following goals:
 
-| Goal                                     | Example                                                                            |
+| Goal                                     | Example(s)                                                                            |
 |------------------------------------------|------------------------------------------------------------------------------------|
-| User convienience                        | `wat tree` [fixes `tree`'s `.gitignore` support](#fixing-trees-gitignore-support). |
+| User convenience                         | `wat`'s ergonomics + `twee` [fixes for `tree`](#fixing-trees-gitignore-support).   |
 | Target [common platforms](#requirements) | Assumes recent-ish [bash][bash-vs-sh]                                              |
-| Avoid chasing "industrial scale"         | `wat tree` maintains legibilty by forgoing caching.                                |
+| Avoid chasing "industrial scale"         | `twee` maintains legibility by forgoing caching.                                |
 
 
 ### Usage
@@ -36,21 +36,18 @@ or [`source "$SHELLBITS\_LIB/logging.sh"`](#libraries).
 
 Skip to [Installing](#installing) for more guidance.
 
+
 #### Commands
 
 The following utility scripts are located in [`bin/`](./bin):
 
-##### `wat`
+##### `twee`
 
-A memorable wrapper for structure and time.
+This wraps the `tree` command to fix `.gitignore` handling on older versions.
 
-`DIR` defaults to the current working directory.
-
-| Example           | Action                                                        |
-|------------------ |---------------------------------------------------------------|
-| `wat tree [DIR]`  | Wraps `tree` in a `.gitignore` adapter to fix older versions. |
-| `wat new [DIR]`   | Show the newest items in `cwd` last (`lu -o oldest [DIR]`)    |
-| `wat old [DIR]`   | Show theo ldest items in `cwd` last (`lu -o newest [DIR]`)    |
+It tries to auto-detect and auto-generate `tree` flags for all known-broken
+`.gitignore` rules(trailing slashes, etc). See the [details section](#details)
+section to learn more about how and why.
 
 ##### `lu`
 
@@ -77,6 +74,26 @@ Remove trailing whitespace at the end of every line.
 |-----------------------------------|------------------------------------------------------------------|
 | `rstrip src/*.js`                 | Strip right-hand whitespace from `src`'s `.js` file in src.      |
 | `makemess | rstrip - > clean.txt` | Pipe messy real-time output into rstrip and store it `clean.txt` |
+
+##### `wat`
+
+This utility acts as a memorable wrapper for the other structure and time helpers.
+
+For each `wat [INFO_TYPE]`, the following also apply:
+
+* `DIR` defaults to the working directory if unspecified
+* All arguments from `[INFO_TYPE]` up to the penultimate one are assumed to be flags
+* The last argument is hanled based on whether it starts with `-`:
+  - If not, it is assumed to be a `DIR` or `FILE` positional
+  - Otherwise, append it as a flag
+* All flags are then passed as-is to the wrappeed command
+
+| Example             | Action                                                                   |
+|---------------------|--------------------------------------------------------------------------|
+| `wat t(ree)? [DIR]` | Runp [`twee`](#twee) to translate `.gitignore` for older `tree` versions.|
+| `wat n(ew)? [DIR]`  | Show items in `DIR`, sorted with newest last ([`lu -o new [DIR]`](#lu))  |
+| `wat o(ld)? [DIR]`  | Show items in `DIR`, sorted with oldest last ([`lu -o old [DIR]`](#lu))  |
+| `wat [rw] FILE`     | Call [`rstrip`](#rstrip) on a file.                                      |
 
 #### Libaries
 
