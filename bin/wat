@@ -31,6 +31,9 @@ each INFO_TYPE passes through any OPTIONS to the wrapped command:
 
         Wraps: twee "\$@"
 
+    m,mon
+       Run twee against a target and refresh the view each time the FS changes.
+
     w,r,rstrip
         Remove trailing whitespace before line endings.
 
@@ -55,6 +58,9 @@ case "$what" in
         ;;
     o|n|old|new)
         lu -o "$what" "$@"
+        ;;
+    m|mon)
+        twee-mon "$@"
         ;;
     --help|help|h)
         if [ "$#" -gt 0 ]; then

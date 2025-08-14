@@ -112,3 +112,20 @@ temp_cd() {
     fi
 }
 
+check_missing() {
+    # Echo any items which do not have a value for `which`.
+    #
+    # If no items are missing, the output is `""`.
+    local missing=""
+    for req in "$@"; do
+        if [ -z "$(which "$req")" ]; then
+            if [ -z "$missing" ]; then
+                missing="$req"
+            else
+                missing="$missing $req"
+            fi
+        fi
+    done
+    echo "$missing"
+}
+

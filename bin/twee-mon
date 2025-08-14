@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+
+if [ -z ${SHELLBITS_LIB_LOGGING+x} ]; then
+    source "$SHELLBITS_LIB/logging.sh"
+fi
+if [ -z ${SHELLBITS_LIB_PATHS+x} ]; then
+    source "$SHELLBITS_LIB/paths.sh"
+fi
+
+usage() {
+cat << END
+usage: twee-mon PATH
+
+Runs a refreshed twee listing of a directory.
+
+This currently uses intotifywait which means it may
+not be a good choice for large projects. It's meant
+to be an editor-agnostic companion to tmux / screen.
+
+END
+}
+REQUIRES="inotifywait"
+MISSING="$(check_missing "$REQUIRES")"
+if [ ! -z "$MISSING" ]; then
+    error "Missing required components: $MISSING"
+    exit 1
+fi
+
+TARGET="$1"
+if [ "$TARGET" == "--help" ]; then
+    usage
+    exit 0
+fi
+
+do_twee() {
+    tput cup 0 0
+    tput clear
+    twee "$TARGET"
+    tput bel
+}
+
+clear
+do_twee
+
+listen_fs() {
+    inotifywait\
+        -q -e modify,move,create,delete\
+        -m -r "$TARGET"\
+        --format '%w %f'
+}
+listen_fs | while read -r dir name; do
+    do_twee
+done
+

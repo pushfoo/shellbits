@@ -11,6 +11,7 @@ The [`wat`](#wat) command acts as a memorable wrapper around the rest of the she
 | `wat $L` shorthand  | Full Shellbits Command     | Summary                                                                           |
 |---------------------|----------------------------|-----------------------------------------------------------------------------------|
 | `wat t [DIR]`       |[`twee [DIR]`](#twee)       | Improve [`tree`'s flaky `.gitignore` handling](#fixing-trees-gitignore-support).  |
+| `wat m [DIR]`       |[`twee-mon [DIR]`(#twee-mon)| Run a filesystem-listening pane for [`twee`](#twee) which refreshes on changes.   |
 | `wat o [DIR]`       |[`lu -o old [DIR]`](#lu)    | "Last used" files sorted with oldest at bottom                                    |
 | `wat n [DIR]`       |[`lu -o new [DIR]`](#lu`)   | "Last used" files sorted with newest at bottom                                    |
 | `wat w FILE`        |[`rstrip FILE`](#rstrip)    | Remove trailing whitespace from files / stdin.                                    |
@@ -19,11 +20,11 @@ The [`wat`](#wat) command acts as a memorable wrapper around the rest of the she
 
 These tools are made with the following goals:
 
-| Goal                                     | Example(s)                                                                            |
+| Goal                                     | Example(s)                                                                         |
 |------------------------------------------|------------------------------------------------------------------------------------|
 | User convenience                         | `wat`'s ergonomics + `twee` [fixes for `tree`](#fixing-trees-gitignore-support).   |
 | Target [common platforms](#requirements) | Assumes recent-ish [bash][bash-vs-sh]                                              |
-| Avoid chasing "industrial scale"         | `twee` maintains legibility by forgoing caching.                                |
+| Avoid chasing "industrial scale"         | `twee` maintains legibility by forgoing caching.                                   |
 
 
 ### Usage
@@ -48,6 +49,15 @@ This wraps the `tree` command to fix `.gitignore` handling on older versions.
 It tries to auto-detect and auto-generate `tree` flags for all known-broken
 `.gitignore` rules(trailing slashes, etc). See the [details section](#details)
 section to learn more about how and why.
+
+##### `twee-mon`
+
+Wraps `twee` by re-running it each time the target directory changes.
+
+It is meant to be an editor-agnostic accompaniment to `tmux` and `screen`.
+
+> [!NOTE]
+> This currently assumes you are on Linux with `intotify-tool` installed.
 
 ##### `lu`
 
