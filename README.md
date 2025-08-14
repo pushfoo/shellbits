@@ -8,13 +8,14 @@ Shell scripts and reusable utility libaries.
 
 The [`wat`](#wat) command acts as a memorable wrapper around the rest of the shellbits utlities:
 
-| `wat $L` shorthand  | Full Shellbits Command     | Summary                                                                           |
-|---------------------|----------------------------|-----------------------------------------------------------------------------------|
-| `wat t [DIR]`       |[`twee [DIR]`](#twee)       | Improve [`tree`'s flaky `.gitignore` handling](#fixing-trees-gitignore-support).  |
-| `wat m [DIR]`       |[`twee-mon [DIR]`(#twee-mon)| Run a filesystem-listening pane for [`twee`](#twee) which refreshes on changes.   |
-| `wat o [DIR]`       |[`lu -o old [DIR]`](#lu)    | "Last used" files sorted with oldest at bottom                                    |
-| `wat n [DIR]`       |[`lu -o new [DIR]`](#lu`)   | "Last used" files sorted with newest at bottom                                    |
-| `wat w FILE`        |[`rstrip FILE`](#rstrip)    | Remove trailing whitespace from files / stdin.                                    |
+| `wat $L` shorthand  | Full Shellbits Command       | Summary                                                                           |
+|---------------------|------------------------------|-----------------------------------------------------------------------------------|
+| `wat t [DIR]`       |[`twee [DIR]`](#twee)         | Improve [`tree`'s flaky `.gitignore` handling](#fixing-trees-gitignore-support).  |
+| `wat m [DIR]`       |[`twee-mon [DIR]`](#twee-mon) | Run a filesystem-listening pane for [`twee`](#twee) which refreshes on changes.   |
+| `wat o [DIR]`       |[`lu -o old [DIR]`](#lu)      | "Last used" files sorted with oldest at bottom                                    |
+| `wat n [DIR]`       |[`lu -o new [DIR]`](#lu`)     | "Last used" files sorted with newest at bottom                                    |
+| `wat w FILE`        |[`rstrip FILE`](#rstrip)      | Remove trailing whitespace from files / stdin.                                    |
+
 
 ### Goals
 
@@ -126,10 +127,18 @@ defined or set to a non-empty value.
 
 #### Requirements
 
-**TL;DR:** Most systems have a `bash` new enough to support [array syntax][].
+**TL;DR:** Your `bash` must support [array syntax][] and you'll need [inotify-tools][] for [`twee-mon`](#twee-mon) to work
 
-Some scripts *may* work with `sh`, [but it not the same as `bash`][bash-vs-sh].
 
+The [`twee-mon`](#twee-mon) command currently requires the Linux-specific
+[inotify-tools][] package for filesystem event handling. Since it's not on
+Mac, that script does not yet support Mac. Otherwise, the rest of shellbits
+should work fine as long as you have `bash` with array support.
+
+> [!IMPORTANT]
+> [The `sh` shell is *not* the same as `bash`][bash-vs-sh]!
+
+[inotify-tools]: https://github.com/inotify-tools/inotify-tools
 [array syntax]: https://www.gnu.org/software/bash/manual/html_node/Arrays.html
 [bash-vs-sh]: https://stackoverflow.com/a/5725402
 
