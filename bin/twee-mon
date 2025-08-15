@@ -1,20 +1,28 @@
 #!/usr/bin/env bash
 
+APP_NAME="$0"
 usage() {
 cat << END
-usage: twee-mon DIR
+usage: $APP_NAME DIR
 
 Display a twee view which refreshes on changes to a DIR.
 
+Exit via Ctrl-C.
+
 WARNING: This is a simple implementation, not a complete one!
 
-It is best used for *small* projects on Linux. Although it does
-ignore any .git directory, it:
+Drawbacks currently include:
 
-1. does not yet filter change events per .gitignore rules
-2. lacks support for Mac due to the inotify-tools dependency
+* Exit is only via Ctrl-C
+* No Mac support since inotify-tools is Linux-specific
+* Configuration is limited to overriding twee by either:
+  - Aliasing twee to a custom script
+  - Setting SHELLBITS_CUSTOM_TWEE environment variable
+* No modification filtering beyond .git folders in DIR)
+  - Large projects / git checkouts are not accounted for
+  - Auto-rebuild scripts may cause unexpected behavior
 
-Otherwise, it's passable as an editor-agnostic companion for:
+Otherwise, $APP_NAME is a passable and editor-agnostic to:
 
 * tmux
 * screen
@@ -30,7 +38,7 @@ if [ -z ${SHELLBITS_LIB_PATHS+x} ]; then
     source "$SHELLBITS_LIB/paths.sh"
 fi
 
-
+CUSTOM_TWEE
 REQUIRES="inotifywait"
 MISSING="$(check_missing "$REQUIRES")"
 if [ ! -z "$MISSING" ]; then
@@ -44,15 +52,25 @@ if [ "$TARGET" == "--help" ]; then
     exit 0
 fi
 
-do_twee() {
+
+TWEE_CMD=""
+if [ -z ${SHELLBITS_CUSTOM_TWEE+x } ]; then
+    TWEE_CMD="twee --noreport --dirsfirst"
+else
+    TWEE_CMD="$SHELLBITS_CUSTOM_TWEE" 
+fi
+
+render_tree() {
+    # Draw the tree in the pane at top left
+
     tput cup 0 0
     tput clear
-    twee --noreport --dirsfirst "$TARGET"
+    $TWEE_CMD "$TARGET"
     tput bel
 }
 
 clear
-do_twee
+render_tree
 
 listen_fs() {
     # Echoes the dir and path of a file each time something changes
@@ -68,6 +86,6 @@ listen_fs() {
 
 # Enter an infinite loop which responds to filesystem changes
 listen_fs | while read -r dir name; do
-    do_twee
+    render_tree
 done
 
