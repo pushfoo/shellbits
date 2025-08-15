@@ -1,9 +1,5 @@
 #!/usr/bin/env bash
 
-if [ -z ${SHELLBITS_LIB_LOGGING+x} ]; then
-    source $SHELLBITS_LIB/logging.sh
-fi
-
 usage() {
 cat <<END
 Usage: $0 INFO_TYPE [OPTIONS] [DIR]
@@ -41,6 +37,10 @@ each INFO_TYPE passes through any OPTIONS to the wrapped command:
 
 END
 }
+
+if [ -z ${SHELLBITS_LIB_LOGGING+x} ]; then
+    source $SHELLBITS_LIB/logging.sh
+fi
 
 
 what=""

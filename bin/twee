@@ -1,27 +1,19 @@
 #!/usr/bin/env bash
 
-
-if [ -z ${SHELLBITS_LIB_LOGGING+x} ]; then
-    source "$SHELLBITS_LIB/logging.sh"
-fi
-if [ -z ${SHELLBITS_LIB_PATHS+x} ]; then
-    source "$SHELLBITS_LIB/paths.sh"
-fi
-
-
 usage() {
 local app="$(basename "$0")"
 cat << END
 Usage: $app [OPTIONS] [directory]
 
-Run tree after translating any known-buggy .gitignore rules.
+Wraps tree by translating known-buggy .gitignore rules.
 
-The last argument may be a directory. When not provided,
-it defaults to the current working directory. OPTIONS are
-passed through directly.
+When the directory is not provided, it will default to the
+current working directory. The directory will be passed as
+an argument to tree after the following:
 
-This workaround lets older versions (v2.1.0 on Debian bookworm)
-handle .gitignore rules correctly.
+1. The --gitignore flag
+2. Any rules translated from the .gitignore
+3. Any passed OPTIONS
 
 OPTIONS:
 
@@ -34,68 +26,66 @@ OPTIONS:
     --dirsfirst
         Sort with directories first.
 
-    [ These are passthrough see man tree or tree --help ]
+    [ See man tree or tree --help for more options ]
+
+Users on distros with later tree versions might not need
+this script. It helps users whose tree versions does not
+properly implement .gitignore. Debian bookworm is a good
+example since it shipped the knownb-buggy tree v2.1.0 at
+the time of writing.
 
 END
 }
 
+# ifndef-like imports
+if [ -z ${SHELLBITS_LIB_LOGGING+x} ]; then
+    source "$SHELLBITS_LIB/logging.sh"
+fi
+if [ -z ${SHELLBITS_LIB_PATHS+x} ]; then
+    source "$SHELLBITS_LIB/paths.sh"
+fi
+
 
 convert_rule_to_flag() {
-    # Echo either an equivalent `tree` flag for known-bad rules or "".
+    # Echo a translated `tree` flag if passed a known-bad rule or `""`.
     #
     # | Buggy Format | Equivalent Flag | PCRE                      |
     # |--------------|-----------------|---------------------------|
     # | `RULE/`      | `-I RULE`       | `^[^#].*\/(?=(\s*#.*)?$)` |
-    #
-    local rule="$1"
-    local flag=""
 
-    if [[ "$rule" =~ ^[^#].*\/(\s*#.*)?$ ]]; then
-        local flag="-I $(echo "$rule" | sed -r 's/(^[^#].*)(\/)(\s+#.)?$/\1/')"
+    if [[ "$1" =~ ^[^#].*\/(\s*#.*)?$ ]]; then
+        echo "-I $(echo "$1" | sed -r 's/(^[^#].*)(\/)(\s+#.)?$/\1/')"
+    else
+        echo ""
     fi
-
-    echo "$flag"
 }
 
 
 build_tree_workaround() {
     # Convert known-broken rules in a `.gitignore` file to `tree` flags.
-    #
-        local file="$1"
-    local output=""
 
+    # String processing for a whole file is slow so we just echo it
     while read -r rule; do
         local flag="$(convert_rule_to_flag "$rule")"
-        if [ -z "$flag" ]; then
-            debug "skipping line \"$rule\""
-        else
-            info "generated flag \"$flag\" for line \"$rule\""
-            output="$output $flag"
+        if [ ! -z "$flag" ]; then
+            echo "$flag"
         fi
-    done < "$file"
-
-    echo "$output"
+    done < "$1"
 }
 
 
-TREE_ARGS=()
-
-
 run_twee() {
-    TREE_ARGS=()
+    local tree_args="$@"
     local raw_path=""
-
-    # Extract all but last arg
-    while [ "$#" -gt 1 ]; do
-        TREE_ARGS+=("$1")
-        shift
-    done
-    # Treat last non-flag as a positional
-    if [[ "$1" =~ ^- ]]; then
-        TREE_ARGS+=("$1")
+    # BUG: not getting the array args correctly?
+    if [ "$#" -gt 0 ] && [[ "$arg" =~ ^- ]]; then
+        local last_index="$(($#-1))";
+        raw_path="${@[last_index]}"
     else
-        raw_path="$1"
+        raw_path="$(pwd)"
+        tree_args+=("$raw_path")
     fi
+    raw_path="$(get_valid_path_or_cwd "$raw_path")"
 
     local exitval=0
     local path="$(get_valid_path_or_cwd "$raw_path")"
@@ -114,7 +104,9 @@ run_twee() {
             workaround_ignore_flags="$(build_tree_workaround "$gitignore")"
         fi
     fi
-    tree --gitignore $workaround_ignore_flags $path
+    debug "base args: $tree_args"
+    debug "path     : $path"
+    tree --gitignore $workaround_ignore_flags $tree_args
     exit "$exitval"
 }
 

@@ -1,15 +1,5 @@
 #!/usr/bin/env bash
 
-# Show the most recently changed items in the folder
-#
-# > [!NOTE]
-# > This currently expects bash since arrays make life easier.
-# >
-# > 1. This is a script for my personal use
-# > 2. I won't say no to at least reviewing a PR
-
-source "$SHELLBITS_LIB/logging.sh"
-
 EXEC_NAME="$0"
 usage() {
 cat << END
@@ -56,6 +46,10 @@ Environment variables:
 
 END
 }
+
+if [ -z ${SHELLBITS_LIB_LOGGING+x} ]; then
+    source "$SHELLBITS_LIB/logging.sh"
+fi
 
 
 # Parse args before validation
@@ -106,9 +100,9 @@ fi
 expand_time() {
     local t="$1"
     local output=""
-    if [[ "$1" =~ o(ld)? ]]; then
+    if [[ "$1" =~ ^o(ld)?$ ]]; then
         output="old"
-    elif [[ "$1" =~ n(ew)? ]]; then
+    elif [[ "$1" =~ ^n(ew)?$ ]]; then
         output="new"
     else
         error "Unkown time value: \"$1\""
@@ -125,7 +119,10 @@ fi
 case "$LU_ORDERING" in
     new) LU_ORDER_FLAG="-t" ;;
     old) LU_ORDER_FLAG="-tr" ;;
-    *)   error "ordering value '$LU_ORDERING' is not one of: new, old"; exit 1 ;;
+    *)
+        error "ordering value '$LU_ORDERING' is not one of: n, new, o, old"
+        exit 1
+        ;;
 esac
 # Default to current directory
 if [ -z ${LU_TARGET+x} ]; then
