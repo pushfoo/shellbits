@@ -8,10 +8,11 @@ Display a twee view which refreshes on changes to a DIR.
 
 WARNING: This is a simple implementation, not a complete one!
 
-It is best used for **small** projects on Linux since it:
+It is best used for *small* projects on Linux. Although it does
+ignore any .git directory, it:
 
-1. does not filter change events according to .gitignore rules
-2. may not work on Mac due to the inotify-tools dependency
+1. does not yet filter change events per .gitignore rules
+2. lacks support for Mac due to the inotify-tools dependency
 
 Otherwise, it's passable as an editor-agnostic companion for:
 
@@ -57,9 +58,11 @@ listen_fs() {
     # Echoes the dir and path of a file each time something changes
     #
     # TODO: Double-check format + offer a non-inotify backing loop
+
+    # Important: the .git exclude prevents noise from git status + git fetch!
     inotifywait\
         -q -e modify,move,create,delete\
-        -m -r "$TARGET"\
+        -m -r "$TARGET" --exclude ".git"\
         --format '%w %f'
 }
 
