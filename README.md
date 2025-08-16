@@ -21,11 +21,11 @@ The [`wat`](#wat) command acts as a memorable wrapper around the rest of the she
 
 These tools are made with the following goals:
 
-| Goal                                     | Example(s)                                                                         |
-|------------------------------------------|------------------------------------------------------------------------------------|
-| User convenience                         | `wat`'s ergonomics + `twee` [fixes for `tree`](#fixing-trees-gitignore-support).   |
-| Target [common platforms](#requirements) | Assumes recent-ish [bash][bash-vs-sh]                                              |
-| Avoid chasing "industrial scale"         | `twee` maintains legibility by forgoing caching.                                   |
+| Goal                                     | Example(s)                                                                        |
+|------------------------------------------|-----------------------------------------------------------------------------------|
+| User convenience                         | `wat`'s ergonomics, `twee`'s [fixes for `tree`](#fixing-trees-gitignore-support). |
+| Target [common platforms](#requirements) | Assumes recent-ish [bash][bash-vs-sh]                                             |
+| Avoid chasing "industrial scale"         | `twee` maintains legibility by forgoing caching.                                  |
 
 
 ### Usage
@@ -65,7 +65,7 @@ It is a simple and editor-agnostic helper for [`tmux`][tmux],
 **Gotchas**
 
 This currently assumes you are on Linux with:
-- [intotify-tools][] installed
+- [inotify-tools][] installed
 - a buggy version of `tree`
 
 See the [requirements](#requirements) section to learn more about:
