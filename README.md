@@ -8,13 +8,16 @@ Shell scripts and reusable utility libaries.
 
 The [`wat`](#wat) command acts as a memorable wrapper around the rest of the shellbits utlities:
 
-| `wat $L` shorthand  | Full Shellbits Command       | Summary                                                                           |
-|---------------------|------------------------------|-----------------------------------------------------------------------------------|
-| `wat t [DIR]`       |[`twee [DIR]`](#twee)         | Improve [`tree`'s flaky `.gitignore` handling](#fixing-trees-gitignore-support).  |
-| `wat m [DIR]`       |[`twee-mon [DIR]`](#twee-mon) | Run a filesystem-listening pane for [`twee`](#twee) which refreshes on changes.   |
-| `wat o [DIR]`       |[`lu -o old [DIR]`](#lu)      | "Last used" files sorted with oldest at bottom                                    |
-| `wat n [DIR]`       |[`lu -o new [DIR]`](#lu`)     | "Last used" files sorted with newest at bottom                                    |
-| `wat w FILE`        |[`rstrip FILE`](#rstrip)      | Remove trailing whitespace from files / stdin.                                    |
+| `wat $L` shorthand  | Full Shellbits Command        | Summary                                                                           |
+|---------------------|-------------------------------|-----------------------------------------------------------------------------------|
+| `wat t [DIR]`       |[`twee [DIR]`](#twee)          | Improve [`tree`'s flaky `.gitignore` handling](#fixing-trees-gitignore-support).  |
+| `wat m [DIR]`       |[`twee-mon [DIR]`](#twee-mon)  | Run a filesystem-listening pane for [`twee`](#twee) which refreshes on changes.   |
+| `wat o [DIR]`       |[`lu -o old [DIR]`](#lu)       | "Last used" files sorted with oldest at bottom                                    |
+| `wat n [DIR]`       |[`lu -o new [DIR]`](#lu`)      | "Last used" files sorted with newest at bottom                                    |
+| `wat w FILE`        |[`rstrip FILE`](#rstrip)       | Remove trailing whitespace from files / stdin.                                    |
+| `wat s [ANY]`       |N/A (Directly wraps [`du`][du] | Show the size(s) of the target(s).                                                |
+
+[du]: https://en.wikipedia.org/wiki/Du_(Unix)
 
 
 ### Goals

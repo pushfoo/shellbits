@@ -30,6 +30,9 @@ each INFO_TYPE passes through any OPTIONS to the wrapped command:
     m,mon
        Run twee against a target and refresh the view each time the FS changes.
 
+    s,size
+       Run du -ch on [DIR]
+
     w,r,rstrip
         Remove trailing whitespace before line endings.
 
@@ -58,6 +61,9 @@ case "$what" in
         ;;
     o|n|old|new)
         lu -o "$what" "$@"
+        ;;
+    s|size)
+        du -ch "$@"
         ;;
     m|mon)
         twee-mon "$@"
