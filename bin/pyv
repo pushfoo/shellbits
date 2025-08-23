@@ -21,7 +21,6 @@ it has these files:
 1. SUB_DIR/bin/activate
 2. SUB_DIR/bin/python 
 
-
 END
 }
 
@@ -40,6 +39,26 @@ get_activation() {
     if [ -d "$1/bin/" ] && [ -f "$1/bin/activate" ]; then
         echo "$1/bin/activate"
     fi
+}
+
+
+check_if_file_in_git() {
+    local file="$1"
+    git blame "$1" > /dev/null 2>&1
+    local git_exit_code="$?"
+    if [ "$git_exit_code" -eq 0 ]; then
+        echo "part of git repo"
+    fi
+}
+
+
+check_for_weird_venv() {
+    # Check for weirdness like the venv being in git
+    local targetpath="$(realpath "$1")"
+    local venvname="$(basename "$targetpath")"
+    local parent="$(dirname "$targetpath")"
+    local is_git="$(temp_cd "$parent" check_if_file_in_git "$targetpath")"
+    echo "$is_git"
 }
 
 
@@ -63,8 +82,10 @@ print_venvs() {
     if [ -z "$output_cmd" ]; then
         output_cmd="echo"
     fi
+    local how_venv_is_weird=""
     for venv in "${VENVS[@]}"; do
-        $output_cmd "$venv"
+        how_venv_is_weird=" $(check_for_weird_venv "$venv")"
+        $output_cmd "$venv$how_venv_is_weird"
     done
 }
 
@@ -95,19 +116,13 @@ fi
 sniff_venvs "$TARGET"
 N_VENVS="${#VENVS[@]}"
 
+
 if [ "$ACTION" == "list" ]; then
     print_venvs "echo"
     exit 0 
 fi
 
-RESULT=1
-activate_venv() {
-    local script="$1"
-    echo "Attempting to activate venv with '$script'"
-    source "$script"
-    RESULT="$?"
-}
-
+# We are now in activate mode
 if [ "$N_VENVS" -ne 1 ]; then
     if [ "$N_VENVS" -eq 0 ]; then
         error "No valid venvs for '$TARGET'"
@@ -116,5 +131,13 @@ if [ "$N_VENVS" -ne 1 ]; then
         print_venvs stderr 
     fi
 fi
-activate_venv "$VENVS"
 
+# Have one venv, so do some preflight checks
+IS_WEIRD="$(check_for_weird_venv "$VENVS")"
+if [ ! -z "$IS_WEIRD" ]; then
+    error "Not activating: $IS_WEIRD"
+    exit 1
+else
+    echo "Attempting to activate venv with '$script'"
+    source "$script"
+fi
