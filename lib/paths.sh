@@ -14,11 +14,19 @@ get_valid_path_or_cwd() {
 
     if [ -z "$1" ]; then
         echo "$(pwd)"
-    elif [ -e "$1" ]; then
+    elif [ -d "$1" ]; then
         echo "$1"
     else
         echo ""
     fi
+}
+
+get_subdir_names() {
+    # Echo the names of subdirectories in $1
+    #
+    # You must prepend the base path to each yourself.
+    local where="$(get_valid_path_or_cwd "$1")"
+    ls -ha -I "." -I ".." "$where"
 }
 
 get_error_for_path_arg() {

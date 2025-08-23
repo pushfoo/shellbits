@@ -1,0 +1,120 @@
+#!/usr/bin/env bash
+
+APP_NAME="$0"
+usage() {
+cat << END
+$APP_NAME [OPTIONS] [DIR]
+
+A minimal wrapper around python's venv module.
+
+It has two modes:
+
+1. Default mode tries to find a single venv to run
+   * Fails with an error if it finds more than one
+   * Otherwise, it runs the activation script
+2. --list prints out any venvs found
+
+Both modes search the current working directory when
+no DIR is given. They treat any SUB_DIR as a venv if
+it has these files:
+
+1. SUB_DIR/bin/activate
+2. SUB_DIR/bin/python 
+
+
+END
+}
+
+if [ -z ${SHELLBITS_LIB_LOGGING+x} ]; then
+    source "$SHELLBITS_LIB/logging.sh"
+fi
+if [ -z ${SHELLBITS_LIB_PATHS+x} ]; then
+    source "$SHELLBITS_LIB/paths.sh"
+fi
+
+
+get_activation() {
+    # Echo an activation script name if it exists in $1/bin/activate
+    local arg="$1"
+    debug "Activation req for '$arg'"
+    if [ -d "$1/bin/" ] && [ -f "$1/bin/activate" ]; then
+        echo "$1/bin/activate"
+    fi
+}
+
+
+VENVS=()
+sniff_venvs() {
+    # Iterate through all subdirs of a path to check for a venv script
+    base="$1"
+    debug "$base"
+    local activate_script=""
+    for path in $(get_subdir_names "$1"); do
+        activate_script="$(get_activation "$base/$path")"
+        if [ ! -z "$activate_script" ]; then
+            info "found script: $activate_script"
+            VENVS+=("$activate_script")
+        fi
+    done
+}
+
+print_venvs() {
+    local output_cmd="$1"
+    if [ -z "$output_cmd" ]; then
+        output_cmd="echo"
+    fi
+    for venv in "${VENVS[@]}"; do
+        $output_cmd "$venv"
+    done
+}
+
+
+ACTION="activate"
+TARGET=
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        --help)
+            usage; shift 1; exit 0 ;;
+        -l|--list)
+            ACTION="list"; shift 1 ;;
+        *)
+            if [ -z "$TARGET" ]; then
+                TARGET="$1"
+                shift 1
+            else
+                error "Already have a positional argument: '$TARGET'. Try --help."
+                exit 1
+            fi
+            ;;
+    esac
+done
+
+if [ -z "$TARGET" ]; then
+    TARGET="$(pwd)"
+fi
+sniff_venvs "$TARGET"
+N_VENVS="${#VENVS[@]}"
+
+if [ "$ACTION" == "list" ]; then
+    print_venvs "echo"
+    exit 0 
+fi
+
+RESULT=1
+activate_venv() {
+    local script="$1"
+    echo "Attempting to activate venv with '$script'"
+    source "$script"
+    RESULT="$?"
+}
+
+if [ "$N_VENVS" -ne 1 ]; then
+    if [ "$N_VENVS" -eq 0 ]; then
+        error "No valid venvs for '$TARGET'"
+    else
+        error "Multiple options detected for '$TARGET':"
+        print_venvs stderr 
+    fi
+fi
+activate_venv "$VENVS"
+

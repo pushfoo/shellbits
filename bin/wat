@@ -32,6 +32,9 @@ each INFO_TYPE passes through any OPTIONS to the wrapped command:
 
     s,size
        Run du -ch on [DIR]
+    
+    v,venv
+       List any Python virtual environments (has a DIR/bin/activate file)
 
     w,r,rstrip
         Remove trailing whitespace before line endings.
@@ -67,6 +70,9 @@ case "$what" in
         ;;
     m|mon)
         twee-mon "$@"
+        ;;
+    v|venv|venvs)
+        pyv --list "$@"
         ;;
     --help|help|h)
         if [ "$#" -gt 0 ]; then

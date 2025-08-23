@@ -15,8 +15,10 @@ The [`wat`](#wat) command acts as a memorable wrapper around the rest of the she
 | `wat o [DIR]`       |[`lu -o old [DIR]`](#lu)       | "Last used" files sorted with oldest at bottom                                    |
 | `wat n [DIR]`       |[`lu -o new [DIR]`](#lu`)      | "Last used" files sorted with newest at bottom                                    |
 | `wat w FILE`        |[`rstrip FILE`](#rstrip)       | Remove trailing whitespace from files / stdin.                                    |
-| `wat s [ANY]`       |N/A (Directly wraps [`du`][du] | Show the size(s) of the target(s).                                                |
+| `wat s [any]`       |n/a (directly wraps [`du`][du] | show the size(s) of the target(s).                                                |
+| `wat v [DIR]`       |`pyv [DIR]`                    | List Python [venvs][] in a directory (defaults to the current one)                |
 
+[venvs]: https://docs.python.org/3/library/venv.html
 [du]: https://en.wikipedia.org/wiki/Du_(Unix)
 
 
@@ -91,6 +93,27 @@ Use this for finer control over than `wat old` and `wat new`.
 | `lu --number 5 -o new ~/Downloads` | Show your 5 latest `~/Downloads` + dates from oldest to newest. |
 
 Use `lu --help` to learn more.
+
+##### `pyv`
+
+List and activate Python [virtual environments][venvs].
+
+It counts any directory which has a `$DIR/bin/activate` file to be a likely virtual environment.
+
+> [!IMPORTANT]
+> Activating via `pyv` **requires** `source` due to how shells work.
+
+| Action                                    | Command            |
+|-------------------------------------------|--------------------|
+| Activate a virtual environment.           | `source pyv`       |
+| List virtual environemnts in a directory. | `pyv --list [DIR]` |
+
+> [!NOTE]
+> This tool helps people who can't use [`uv`][uv] or [`poetry`][poetry] for some reason.
+
+
+[uv]: https://docs.astral.sh/uv/
+[poetry]: https://python-poetry.org/
 
 ##### `rstrip`
 
