@@ -15,12 +15,11 @@ The [`wat`](#wat) command acts as a memorable wrapper around the rest of the she
 | `wat o [DIR]`       |[`lu -o old [DIR]`](#lu)       | "Last used" files sorted with oldest at bottom                                    |
 | `wat n [DIR]`       |[`lu -o new [DIR]`](#lu`)      | "Last used" files sorted with newest at bottom                                    |
 | `wat w FILE`        |[`rstrip FILE`](#rstrip)       | Remove trailing whitespace from files / stdin.                                    |
-| `wat s [any]`       |n/a (directly wraps [`du`][du] | show the size(s) of the target(s).                                                |
-| `wat v [DIR]`       |`pyv [DIR]`                    | List Python [venvs][] in a directory (defaults to the current one)                |
+| `wat s [any]`       |n/a (directly wraps [`du`][du] | Show the size(s) of the target(s).                                                |
+| `wat v [DIR]`       |[`pyv [DIR]`][pyv]             | List Python [venvs][] in a directory (defaults to the current one)                |
 
 [venvs]: https://docs.python.org/3/library/venv.html
 [du]: https://en.wikipedia.org/wiki/Du_(Unix)
-
 
 ### Goals
 
@@ -122,10 +121,10 @@ Remove trailing whitespace at the end of every line.
 * Operates in-place on passed filenames
 * Pass a single `-` to read from `stdin`
 
-| Example                           | Action                                                           |
-|-----------------------------------|------------------------------------------------------------------|
-| `rstrip src/*.js`                 | Strip right-hand whitespace from `src`'s `.js` file in src.      |
-| `makemess | rstrip > clean.txt`   | Pipe messy real-time output into rstrip and store it `clean.txt` |
+| Example                           | Action                                                             |
+|-----------------------------------|--------------------------------------------------------------------|
+| `rstrip src/*.js`                 | Strip right-hand whitespace from `src`'s `.js` file in src.        |
+| `makemess \| rstrip > clean.txt`  | Pipe messy real-time output into `rstrip` and store it `clean.txt` |
 
 ##### `wat`
 
